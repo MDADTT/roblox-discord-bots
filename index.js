@@ -123,13 +123,14 @@ client.once("ready", async () => {
   // Register slash commands
   const rest = new REST().setToken(DISCORD_TOKEN);
   try {
+    console.log('Started refreshing application (/) commands.');
     await rest.put(
       Routes.applicationCommands(client.user.id),
       { body: commands },
     );
-    console.log('Successfully registered application commands.');
+    console.log('Successfully reloaded application (/) commands.');
   } catch (error) {
-    console.error(error);
+    console.error('Error registering commands:', error);
   }
 });
 
