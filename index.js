@@ -153,6 +153,13 @@ async function demoteUser(message, robloxUsername) {
 client.once("ready", async () => {
   console.log(`${client.user.tag} is online!`);
   await robloxLogin();
+  
+  // Auto-restart every 5 minutes
+  setInterval(() => {
+    console.log("Auto-restarting bot...");
+    client.destroy();
+    client.login(DISCORD_TOKEN);
+  }, 5 * 60 * 1000); // 5 minutes in milliseconds
 });
 
 client.on("messageCreate", async (message) => {
