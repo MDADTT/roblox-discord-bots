@@ -310,6 +310,26 @@ client.on("messageCreate", async (message) => {
     message.channel.send({ embeds: [helpEmbed] });
   }
 
+  if (command === "!maintenance") {
+    if (message.author.id !== '942051843306049576') {
+      return message.reply("You don't have permission to use this command.");
+    }
+
+    const embed = new EmbedBuilder()
+      .setColor('#FF0000')
+      .setTitle('**Maintenance Mode Activated**')
+      .setDescription('The bot is currently undergoing maintenance.\nPlease stand by — we\'ll be back shortly!')
+      .setThumbnail('https://cdn-icons-png.flaticon.com/512/189/189792.png')
+      .addFields(
+        { name: 'Status', value: 'Under Maintenance', inline: true },
+        { name: 'ETA', value: 'Soon', inline: true }
+      )
+      .setFooter({ text: 'Thank you for your patience!', iconURL: message.client.user.displayAvatarURL() })
+      .setTimestamp();
+
+    message.channel.send({ embeds: [embed] });
+  }
+
   if (command === "!exile") {
     if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
       return message.reply("Only administrators can use the exile command.");
