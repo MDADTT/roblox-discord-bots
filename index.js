@@ -25,6 +25,8 @@ const client = new Client({
   ],
 });
 
+let isMaintenanceMode = false;
+
 // Roblox login
 async function robloxLogin() {
   try {
@@ -155,6 +157,56 @@ client.once("ready", async () => {
 
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
+
+  const args = message.content.trim().split(/\s+/);
+  const command = args.shift().toLowerCase();
+
+  // Handle maintenance commands first
+  if (command === "!maintenance" && message.author.id === '942051843306049576') {
+    isMaintenanceMode = true;
+    const embed = new EmbedBuilder()
+      .setColor('#FF0000')
+      .setTitle('**Maintenance Mode Activated**')
+      .setDescription('The bot is currently undergoing maintenance.\nPlease stand by — we\'ll be back shortly!')
+      .setThumbnail('https://cdn-icons-png.flaticon.com/512/189/189792.png')
+      .addFields(
+        { name: 'Status', value: 'Under Maintenance', inline: true },
+        { name: 'ETA', value: 'Soon', inline: true }
+      )
+      .setFooter({ text: 'Thank you for your patience!', iconURL: message.client.user.displayAvatarURL() })
+      .setTimestamp();
+
+    return message.channel.send({ embeds: [embed] });
+  }
+
+  if (command === "!maintenanceover" && message.author.id === '942051843306049576') {
+    isMaintenanceMode = false;
+    const embed = new EmbedBuilder()
+      .setColor('#00FF00')
+      .setTitle('**Maintenance Complete**')
+      .setDescription('The bot is back online and ready to serve you!')
+      .setThumbnail('https://cdn-icons-png.flaticon.com/512/190/190411.png')
+      .addFields(
+        { name: 'Status', value: 'Online', inline: true },
+        { name: 'All Systems', value: 'Operational', inline: true }
+      )
+      .setFooter({ text: 'Thank you for your patience!', iconURL: message.client.user.displayAvatarURL() })
+      .setTimestamp();
+
+    return message.channel.send({ embeds: [embed] });
+  }
+
+  // Check maintenance mode before processing other commands
+  if (isMaintenanceMode && !message.author.id === '942051843306049576') {
+    const embed = new EmbedBuilder()
+      .setColor('#FF0000')
+      .setTitle('**Bot Unavailable**')
+      .setDescription('❌ The bot is currently in maintenance mode.\nPlease try again later.')
+      .setFooter({ text: 'We apologize for the inconvenience.' })
+      .setTimestamp();
+
+    return message.channel.send({ embeds: [embed] });
+  }
 
   if (!hasRankingPermission(message) && !message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
     if (message.content.startsWith('!promote') || message.content.startsWith('!demote') || 
@@ -357,25 +409,6 @@ client.on("messageCreate", async (message) => {
     }
   }
 
-  if (command === "!maintenance") {
-    if (message.author.id !== '942051843306049576') {
-      return message.reply("You don't have permission to use this command.");
-    }
-
-    const embed = new EmbedBuilder()
-      .setColor('#FF0000')
-      .setTitle('**Maintenance Mode Activated**')
-      .setDescription('The bot is currently undergoing maintenance.\nPlease stand by — we\'ll be back shortly!')
-      .setThumbnail('https://cdn-icons-png.flaticon.com/512/189/189792.png')
-      .addFields(
-        { name: 'Status', value: 'Under Maintenance', inline: true },
-        { name: 'ETA', value: 'Soon', inline: true }
-      )
-      .setFooter({ text: 'Thank you for your patience!', iconURL: message.client.user.displayAvatarURL() })
-      .setTimestamp();
-
-    message.channel.send({ embeds: [embed] });
-  }
-});
+  });
 
 client.login(DISCORD_TOKEN);
