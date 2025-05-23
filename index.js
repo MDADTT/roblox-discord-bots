@@ -27,6 +27,9 @@ let isMaintenanceMode = false;
 // Define slash commands
 const commands = [
   new SlashCommandBuilder()
+    .setName('help')
+    .setDescription('Shows all available commands and their descriptions'),
+  new SlashCommandBuilder()
     .setName('promote')
     .setDescription('Promotes a user up one rank')
     .addStringOption(option =>
@@ -155,6 +158,27 @@ client.on('interactionCreate', async interaction => {
 
   try {
     switch (interaction.commandName) {
+      case 'help': {
+        const helpEmbed = new EmbedBuilder()
+          .setColor('#2F3136')
+          .setTitle('📚 Available Commands')
+          .setDescription('Here are all the available commands:')
+          .addFields(
+            { name: '/help', value: 'Shows this help message' },
+            { name: '/promote <username>', value: 'Promotes a user up one rank in the group' },
+            { name: '/demote <username>', value: 'Demotes a user one rank down in the group' },
+            { name: '/setrank <username> <rankid>', value: 'Sets a user\'s rank to the specified rank ID' },
+            { name: '/ranklist', value: 'Shows all available ranks and their IDs' },
+            { name: '/exile <username>', value: 'Exiles a user from the group (Admin only)' },
+            { name: '/maintenance', value: 'Puts the bot into maintenance mode (Owner only)' },
+            { name: '/maintenanceover', value: 'Takes the bot out of maintenance mode (Owner only)' }
+          )
+          .setFooter({ text: 'Use these commands responsibly!', iconURL: client.user.displayAvatarURL() })
+          .setTimestamp();
+
+        await interaction.reply({ embeds: [helpEmbed], ephemeral: true });
+        break;
+      }
       case 'promote': {
         const username = interaction.options.getString('username');
         const userId = await noblox.getIdFromUsername(username);
