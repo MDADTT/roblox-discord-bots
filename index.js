@@ -162,7 +162,7 @@ client.on("messageCreate", async (message) => {
   const command = args.shift().toLowerCase();
 
   // Check maintenance mode before processing any commands
-  if (isMaintenanceMode && message.author.id !== '942051843306049576') {
+  if (message.content.startsWith('!') && isMaintenanceMode && message.author.id !== '942051843306049576') {
     const embed = new EmbedBuilder()
       .setColor('#FF0000')
       .setTitle('**Bot Unavailable**')
