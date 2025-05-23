@@ -161,7 +161,19 @@ client.on("messageCreate", async (message) => {
   const args = message.content.trim().split(/\s+/);
   const command = args.shift().toLowerCase();
 
-  // Handle maintenance commands first
+  // Check maintenance mode before processing any commands
+  if (isMaintenanceMode && message.author.id !== '942051843306049576') {
+    const embed = new EmbedBuilder()
+      .setColor('#FF0000')
+      .setTitle('**Bot Unavailable**')
+      .setDescription('❌ The bot is currently in maintenance mode.\nPlease try again later.')
+      .setFooter({ text: 'We apologize for the inconvenience.' })
+      .setTimestamp();
+
+    return message.channel.send({ embeds: [embed] });
+  }
+
+  // Handle maintenance commands
   if (command === "!maintenance" && message.author.id === '942051843306049576') {
     isMaintenanceMode = true;
     const embed = new EmbedBuilder()
@@ -196,17 +208,7 @@ client.on("messageCreate", async (message) => {
     return message.channel.send({ embeds: [embed] });
   }
 
-  // Check maintenance mode before processing other commands
-  if (isMaintenanceMode && message.author.id !== '942051843306049576') {
-    const embed = new EmbedBuilder()
-      .setColor('#FF0000')
-      .setTitle('**Bot Unavailable**')
-      .setDescription('❌ The bot is currently in maintenance mode.\nPlease try again later.')
-      .setFooter({ text: 'We apologize for the inconvenience.' })
-      .setTimestamp();
-
-    return message.channel.send({ embeds: [embed] });
-  }
+  
 
   if (!hasRankingPermission(message) && !message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
     if (message.content.startsWith('!promote') || message.content.startsWith('!demote') || 
