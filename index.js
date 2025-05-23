@@ -11,10 +11,10 @@ const {
 const noblox = require("noblox.js");
 
 // Set up bot token and Roblox credentials
-const DISCORD_TOKEN = process.env["DISCORD_TOKEN"];
-const ROBLOX_GROUP_ID = process.env["ROBLOX_GROUP_ID"];
-const ROBLOX_COOKIE = process.env["ROBLOX_COOKIE"];
-const LOG_CHANNEL_ID = process.env["LOG_CHANNEL_ID"];
+const DISCORD_TOKEN = process.env.DISCORD_TOKEN
+const ROBLOX_GROUP_ID = process.env.ROBLOX_GROUP_ID
+const ROBLOX_COOKIE = process.env.ROBLOX_COOKIE
+const LOG_CHANNEL_ID = process.env.LOG_CHANNEL_ID
 
 // Create a new Discord client
 const client = new Client({
