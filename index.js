@@ -216,9 +216,6 @@ client.on("messageCreate", async (message) => {
     return;
   }
 
-  const args = message.content.trim().split(/\s+/);
-  const command = args.shift().toLowerCase();
-
   if (command === "!promote") {
     if (args.length !== 1) {
       message.channel.send("Usage: !promote <roblox username>");
