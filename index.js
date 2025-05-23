@@ -359,7 +359,7 @@ client.on("messageCreate", async (message) => {
         { name: '!promote <roblox username>', value: 'Promotes a user up one rank' },
         { name: '!demote <roblox username>', value: 'Demotes a user one rank below' },
         { name: '!setrank <roblox username> <rank ID>', value: 'Sets rank of the user to that of the rank ID' },
-        { name: '!exile <roblox username>', value: 'Exiles a user from the group (Admin only)' }
+        { name: '!exile <roblox username>', value: 'Exiles a user from the group (Admin only)' },
         { name: '!ranklist', value: 'Shows all of the rank IDs, used for !setrank command' },
       { name: '!maintenance', value: 'Puts the bot into maintenance mode (Owner only)' },
         { name: '!maintenanceover', value: 'Takes the bot out of maintenance mode (Owner only)' }
