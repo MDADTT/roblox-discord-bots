@@ -158,9 +158,6 @@ client.once("ready", async () => {
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
 
-  const args = message.content.trim().split(/\s+/);
-  const command = args.shift().toLowerCase();
-
   // Handle maintenance commands first
   if (command === "!maintenance" && message.author.id === '942051843306049576') {
     isMaintenanceMode = true;
