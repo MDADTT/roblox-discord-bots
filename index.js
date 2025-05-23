@@ -40,7 +40,7 @@ async function logCommand(message, commandName, targetUser, rankName) {
     const logChannel = await client.channels.fetch(LOG_CHANNEL_ID);
     if (!logChannel) return;
 
-    const executor = ${message.author} (${message.author.tag});
+    const executor = `${message.author} (${message.author.tag})`;
     const target = targetUser || "N/A";
     const rank = rankName || "N/A";
 
@@ -72,7 +72,7 @@ async function promoteUser(message, robloxUsername) {
   try {
     const userId = await noblox.getIdFromUsername(robloxUsername);
     if (!userId) {
-      message.channel.send(Could not find Roblox user \${robloxUsername}\.);
+      message.channel.send('Could not find Roblox user \${robloxUsername}\.');
       return;
     }
 
