@@ -28,7 +28,7 @@ const client = new Client({
 async function robloxLogin() {
   try {
     const currentUser = await noblox.setCookie(ROBLOX_COOKIE);
-    console.log(Logged in to Roblox as ${currentUser.UserName});
+    console.log(`Logged in to Roblox as ${currentUser.UserName}`);
   } catch (error) {
     console.error("Failed to login to Roblox:", error);
   }
