@@ -6,21 +6,22 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
+  EmbedBuilder
 } = require("discord.js");
 const noblox = require("noblox.js");
 
 // Set up bot token and Roblox credentials
-const DISCORD_TOKEN = process.env["DISCORD_TOKEN"]; // Replace with your Discord bot token
-const ROBLOX_GROUP_ID = process.env["ROBLOX_GROUP_ID"]; // Replace with your Roblox group ID
-const ROBLOX_COOKIE = process.env["ROBLOX_COOKIE"]; // Replace with your Roblox session cookie (ROBLOSECURITY)
+const DISCORD_TOKEN = process.env["DISCORD_TOKEN"];
+const ROBLOX_GROUP_ID = process.env["ROBLOX_GROUP_ID"];
+const ROBLOX_COOKIE = process.env["ROBLOX_COOKIE"];
 const LOG_CHANNEL_ID = process.env["LOG_CHANNEL_ID"];
 
-// Create a new Discord client (updated for discord.js v14+)
+// Create a new Discord client
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent, // Required for reading message content in v14+
+    GatewayIntentBits.MessageContent,
   ],
 });
 
@@ -34,7 +35,7 @@ async function robloxLogin() {
   }
 }
 
-// Helper to log commands to the specified channel
+// Helper to log commands
 async function logCommand(message, commandName, targetUser, rankName) {
   try {
     const logChannel = await client.channels.fetch(LOG_CHANNEL_ID);
@@ -61,37 +62,33 @@ async function logCommand(message, commandName, targetUser, rankName) {
   }
 }
 
-// Check for ranking permission before handling commands
+// Check for ranking permission
 function hasRankingPermission(message) {
-  const allowedRoleName = 'Ranking Permission'; // Replace with your role name
+  const allowedRoleName = 'Ranking Permission';
   return message.member && message.member.roles.cache.some(role => role.name === allowedRoleName);
 }
 
-// Promote command: promote user 1 rank up
+// Promote command
 async function promoteUser(message, robloxUsername) {
   try {
     const userId = await noblox.getIdFromUsername(robloxUsername);
     if (!userId) {
-      message.channel.send('Could not find Roblox user \${robloxUsername}\.');
+      message.channel.send(`Could not find Roblox user ${robloxUsername}`);
       return;
     }
 
     const roles = await noblox.getRoles(ROBLOX_GROUP_ID);
     const currentRank = await noblox.getRankInGroup(ROBLOX_GROUP_ID, userId);
 
-    // Find the current rank role object
     const currentRoleIndex = roles.findIndex((r) => r.rank === currentRank);
     if (currentRoleIndex === -1) {
-      message.channel.send(
-        Could not find current rank for user \${robloxUsername}\.,
-      );
+      message.channel.send(`Could not find current rank for user ${robloxUsername}`);
       return;
     }
 
-    // Check if user is already at highest rank
     if (currentRoleIndex === roles.length - 1) {
       message.channel.send(
-        ${robloxUsername} is already at the highest rank (${roles[currentRoleIndex].name}).,
+        `${robloxUsername} is already at the highest rank (${roles[currentRoleIndex].name})`
       );
       return;
     }
@@ -100,10 +97,9 @@ async function promoteUser(message, robloxUsername) {
 
     await noblox.setRank(ROBLOX_GROUP_ID, userId, newRank.rank);
     message.channel.send(
-      Successfully promoted ${robloxUsername} to **${newRank.name}**.,
+      `Successfully promoted ${robloxUsername} to **${newRank.name}**`
     );
 
-    // Log command usage
     await logCommand(message, "!promote", robloxUsername, newRank.name);
   } catch (error) {
     console.error(error);
@@ -111,12 +107,12 @@ async function promoteUser(message, robloxUsername) {
   }
 }
 
-// Demote command: demote user 1 rank down
+// Demote command
 async function demoteUser(message, robloxUsername) {
   try {
     const userId = await noblox.getIdFromUsername(robloxUsername);
     if (!userId) {
-      message.channel.send(Could not find Roblox user \${robloxUsername}\.);
+      message.channel.send(`Could not find Roblox user ${robloxUsername}`);
       return;
     }
 
@@ -126,15 +122,14 @@ async function demoteUser(message, robloxUsername) {
     const currentRoleIndex = roles.findIndex((r) => r.rank === currentRank);
     if (currentRoleIndex === -1) {
       message.channel.send(
-        Could not find current rank for user \${robloxUsername}\.,
+        `Could not find current rank for user ${robloxUsername}`
       );
       return;
     }
 
-    // Check if user is already at lowest rank
     if (currentRoleIndex === 0) {
       message.channel.send(
-        ${robloxUsername} is already at the lowest rank (${roles[currentRoleIndex].name}).,
+        `${robloxUsername} is already at the lowest rank (${roles[currentRoleIndex].name})`
       );
       return;
     }
@@ -143,10 +138,9 @@ async function demoteUser(message, robloxUsername) {
 
     await noblox.setRank(ROBLOX_GROUP_ID, userId, newRank.rank);
     message.channel.send(
-      Successfully demoted ${robloxUsername} to **${newRank.name}**.,
+      `Successfully demoted ${robloxUsername} to **${newRank.name}**`
     );
 
-    // Log command usage
     await logCommand(message, "!demote", robloxUsername, newRank.name);
   } catch (error) {
     console.error(error);
@@ -155,14 +149,13 @@ async function demoteUser(message, robloxUsername) {
 }
 
 client.once("ready", async () => {
-  console.log(${client.user.tag} is online!);
+  console.log(`${client.user.tag} is online!`);
   await robloxLogin();
 });
 
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
 
-  // Check for Ranking Permission role or Admin perms
   if (!hasRankingPermission(message) && !message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
     if (message.content.startsWith('!promote') || message.content.startsWith('!demote') || 
         message.content.startsWith('!setrank') || message.content.startsWith('!ranklist')) {
@@ -171,8 +164,7 @@ client.on("messageCreate", async (message) => {
     return;
   }
 
-  const content = message.content.trim();
-  const args = content.split(/\s+/);
+  const args = message.content.trim().split(/\s+/);
   const command = args.shift().toLowerCase();
 
   if (command === "!promote") {
@@ -180,8 +172,7 @@ client.on("messageCreate", async (message) => {
       message.channel.send("Usage: !promote <roblox username>");
       return;
     }
-    const robloxUsername = args[0];
-    await promoteUser(message, robloxUsername);
+    await promoteUser(message, args[0]);
   }
 
   if (command === "!demote") {
@@ -189,11 +180,10 @@ client.on("messageCreate", async (message) => {
       message.channel.send("Usage: !demote <roblox username>");
       return;
     }
-    const robloxUsername = args[0];
-    await demoteUser(message, robloxUsername);
+    await demoteUser(message, args[0]);
   }
 
-  if (message.content.toLowerCase().startsWith("!ranklist")) {
+  if (command === "!ranklist") {
     try {
       const roles = await noblox.getRoles(ROBLOX_GROUP_ID);
       const ranksPerPage = 10;
@@ -201,26 +191,19 @@ client.on("messageCreate", async (message) => {
       let currentPage = 1;
 
       function getRankListPage(page) {
-        const start = (page - 1) * ranksPerPage;
-        const end = start + ranksPerPage;
-        const pageRoles = roles.slice(start, end);
-        return pageRoles.map(role => ${role.name}: ${role.rank}).join('\n');
-      }
-
-      function getRankListPage(page) {
         const filteredRoles = roles.filter(role => role.rank !== 0);
         const start = (page - 1) * ranksPerPage;
         const end = start + ranksPerPage;
         const pageRoles = filteredRoles.slice(start, end);
-        return pageRoles.map(role => \${role.rank}\ • **${role.name}**).join('\n');
+        return pageRoles.map(role => `${role.rank} • **${role.name}**`).join('\n');
       }
 
       const rankEmbed = {
         color: 0x2F3136,
         title: '📋 Group Rank List',
-        description: Below are all available ranks in the group. Use the buttons to navigate between pages.\n\n**Page ${currentPage} of ${totalPages}**\n\n${getRankListPage(currentPage)},
+        description: `Below are all available ranks in the group. Use the buttons to navigate between pages.\n\n**Page ${currentPage} of ${totalPages}**\n\n${getRankListPage(currentPage)}`,
         footer: { 
-          text: Total Ranks: ${roles.length} • Page ${currentPage}/${totalPages},
+          text: `Total Ranks: ${roles.length} • Page ${currentPage}/${totalPages}`,
           icon_url: message.guild.iconURL()
         },
         timestamp: new Date()
@@ -254,7 +237,7 @@ client.on("messageCreate", async (message) => {
           currentPage++;
         }
 
-        rankEmbed.description = Available ranks and their IDs (Page ${currentPage}/${totalPages}):\n\n${getRankListPage(currentPage)};
+        rankEmbed.description = `Available ranks and their IDs (Page ${currentPage}/${totalPages}):\n\n${getRankListPage(currentPage)}`;
 
         row.components[0].setDisabled(currentPage === 1);
         row.components[1].setDisabled(currentPage === totalPages);
@@ -272,14 +255,13 @@ client.on("messageCreate", async (message) => {
     }
   }
 
-  if (message.content.toLowerCase().startsWith("!setrank")) {
-    const args = message.content.split(" ");
-    const robloxUsername = args[1];
-    const rankId = parseInt(args[2]);
+  if (command === "!setrank") {
+    const robloxUsername = args[0];
+    const rankId = parseInt(args[1]);
 
     if (!robloxUsername || isNaN(rankId)) {
       return message.channel.send(
-        "Please provide a valid Roblox username and rank ID. Usage: !setrank <username> <rankID>",
+        "Please provide a valid Roblox username and rank ID. Usage: !setrank <username> <rankID>"
       );
     }
 
@@ -287,33 +269,30 @@ client.on("messageCreate", async (message) => {
       const userId = await noblox.getIdFromUsername(robloxUsername);
       if (!userId) {
         return message.channel.send(
-          Could not find user ${robloxUsername} on Roblox.,
+          `Could not find user ${robloxUsername} on Roblox.`
         );
       }
 
-      // Set the rank
       await noblox.setRank(ROBLOX_GROUP_ID, userId, rankId);
 
-      // Get the rank name to show in the message
       const roles = await noblox.getRoles(ROBLOX_GROUP_ID);
       const role = roles.find((r) => r.rank === rankId);
       const rankName = role ? role.name : "Unknown Rank";
 
       message.channel.send(
-        Successfully set ${robloxUsername}'s rank to **${rankName}**.,
+        `Successfully set ${robloxUsername}'s rank to **${rankName}**`
       );
 
-      // Log the command usage
-      await logCommand(message, "!setrank", robloxUsername, ${rankName} (ID: ${rankId}));
+      await logCommand(message, "!setrank", robloxUsername, `${rankName} (ID: ${rankId})`);
     } catch (error) {
       console.error("Error in !setrank command:", error);
       message.channel.send(
-        "There was an error setting the rank. Please try again later.",
+        "There was an error setting the rank. Please try again later."
       );
     }
   }
 
-  if (message.content.toLowerCase() === "!rankhelp") {
+  if (command === "!rankhelp") {
     const helpEmbed = {
       color: 0x0099ff,
       title: 'Rank Bot Commands',
@@ -330,13 +309,13 @@ client.on("messageCreate", async (message) => {
 
     message.channel.send({ embeds: [helpEmbed] });
   }
-  if (message.content.toLowerCase().startsWith("!exile")) {
+
+  if (command === "!exile") {
     if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
       return message.reply("Only administrators can use the exile command.");
     }
 
-    const args = message.content.split(" ");
-    const robloxUsername = args[1];
+    const robloxUsername = args[0];
 
     if (!robloxUsername) {
       return message.channel.send("Please provide a Roblox username. Usage: !exile <username>");
@@ -345,95 +324,38 @@ client.on("messageCreate", async (message) => {
     try {
       const userId = await noblox.getIdFromUsername(robloxUsername);
       if (!userId) {
-        return message.channel.send(Could not find user ${robloxUsername} on Roblox.);
+        return message.channel.send(`Could not find user ${robloxUsername} on Roblox.`);
       }
 
       await noblox.exile(ROBLOX_GROUP_ID, userId);
-      message.channel.send(Successfully exiled ${robloxUsername} from the group.);
+      message.channel.send(`Successfully exiled ${robloxUsername} from the group.`);
 
-      // Log the command usage
       await logCommand(message, "!exile", robloxUsername, "Exiled from group");
     } catch (error) {
       console.error("Error in !exile command:", error);
       message.channel.send("There was an error exiling the user.");
     }
   }
-  // Other commands go here
-const authorizedUserID = '123456789012345678';
 
-module.exports = {
-    name: 'maintenance',
-    description: 'Put the bot into maintenance mode (authorized users only)',
-    async execute(message) {
-        // Check if the message author is the authorized user
-        if (message.author.id !== authorizedUserID) {
-            return message.reply("You don't have permission to use this command.");
-        }
-
-        // Create the maintenance embed
-        const maintenanceEmbed = new EmbedBuilder()
-            .setColor('#FF0000')
-            .setTitle('**Maintenance Mode Activated**')
-            .setDescription('The bot is currently undergoing maintenance.\nPlease stand by — we\'ll be back shortly!')
-            .setThumbnail('https://cdn-icons-png.flaticon.com/512/189/189792.png')
-            .addFields(
-                { name: 'Status', value: 'Under Maintenance', inline: true },
-                { name: 'ETA', value: 'Soon', inline: true }
-            )
-            .setFooter({ text: 'Thank you for your patience!', iconURL: message.client.user.displayAvatarURL() })
-            .setTimestamp();
-
-        // Send the embed to the channel
-        message.channel.send({ embeds: [maintenanceEmbed] });
+  if (command === "!maintenance") {
+    if (message.author.id !== '942051843306049576') {
+      return message.reply("You don't have permission to use this command.");
     }
-};
 
-const { Client, Collection, GatewayIntentBits } = require('discord.js');
-const fs = require('fs');
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
+    const embed = new EmbedBuilder()
+      .setColor('#FF0000')
+      .setTitle('**Maintenance Mode Activated**')
+      .setDescription('The bot is currently undergoing maintenance.\nPlease stand by — we\'ll be back shortly!')
+      .setThumbnail('https://cdn-icons-png.flaticon.com/512/189/189792.png')
+      .addFields(
+        { name: 'Status', value: 'Under Maintenance', inline: true },
+        { name: 'ETA', value: 'Soon', inline: true }
+      )
+      .setFooter({ text: 'Thank you for your patience!', iconURL: message.client.user.displayAvatarURL() })
+      .setTimestamp();
 
-client.commands = new Collection();
-
-// Load commands
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-for (const file of commandFiles) {
-    const command = require(./commands/${file});
-    client.commands.set(command.name, command);
-}
-
-client.on('messageCreate', async message => {
-    if (!message.content.startsWith('!') || message.author.bot) return;
-
-    const args = message.content.slice(1).split(/ +/);
-    const commandName = args.shift().toLowerCase();
-
-    const command = client.commands.get(commandName);
-    if (!command) return;
-
-    try {
-        await command.execute(message, args);
-    } catch (error) {
-        console.error(error);
-        message.reply('There was an error trying to execute that command.');
-    }
+    message.channel.send({ embeds: [embed] });
+  }
 });
-    if (message.content === '!maintenance') {
-        if (message.author.id !== '942051843306049576') {
-            return message.reply("You don't have permission to use this command.");
-        }
 
-        const embed = new EmbedBuilder()
-            .setColor('#FF0000')
-            .setTitle('**Maintenance Mode Activated**')
-            .setDescription('The bot is currently undergoing maintenance.\nPlease stand by — we\'ll be back shortly!')
-            .setThumbnail('https://cdn-icons-png.flaticon.com/512/189/189792.png')
-            .addFields(
-                { name: 'Status', value: 'Under Maintenance', inline: true },
-                { name: 'ETA', value: 'Soon', inline: true }
-            )
-            .setFooter({ text: 'Thank you for your patience!', iconURL: message.client.user.displayAvatarURL() })
-            .setTimestamp();
-
-        message.channel.send({ embeds: [embed] });
-    }
-});
+client.login(DISCORD_TOKEN);
