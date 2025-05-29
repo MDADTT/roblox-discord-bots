@@ -17,9 +17,10 @@ const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 const ROBLOX_GROUP_ID = process.env.ROBLOX_GROUP_ID;
 const ROBLOX_COOKIE = process.env.ROBLOX_COOKIE;
 const LOG_CHANNEL_ID = process.env.LOG_CHANNEL_ID;
+const DM_LOG_CHANNEL_ID = '1377717185199214663';
 
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds]
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.DirectMessages]
 });
 
 let isMaintenanceMode = false;
@@ -69,7 +70,18 @@ const commands = [
     .setDescription('Puts the bot into maintenance mode'),
   new SlashCommandBuilder()
     .setName('maintenanceover')
-    .setDescription('Takes the bot out of maintenance mode')
+    .setDescription('Takes the bot out of maintenance mode'),
+  new SlashCommandBuilder()
+    .setName('dm')
+    .setDescription('Send a DM to a user (Owner only)')
+    .addStringOption(option =>
+      option.setName('userid')
+        .setDescription('User ID to send DM to')
+        .setRequired(true))
+    .addStringOption(option =>
+      option.setName('message')
+        .setDescription('Message to send')
+        .setRequired(true))
 ];
 
 // Roblox login
@@ -115,6 +127,29 @@ async function logCommand(interaction, commandName, targetUser, rankName) {
     logChannel.send({ embeds: [logEmbed] });
   } catch (err) {
     console.error("Failed to send log message:", err);
+  }
+}
+
+// Helper to log DM messages
+async function logDM(user, message, type) {
+  try {
+    const dmLogChannel = await client.channels.fetch(DM_LOG_CHANNEL_ID);
+    if (!dmLogChannel) return;
+
+    const dmEmbed = new EmbedBuilder()
+      .setColor(type === 'received' ? '#0099ff' : '#ff9900')
+      .setTitle(`📧 DM ${type === 'received' ? 'Received' : 'Sent'}`)
+      .setDescription(`**Message:** ${message}`)
+      .addFields(
+        { name: 'User', value: `${user.tag} (${user.id})`, inline: true },
+        { name: 'Type', value: type === 'received' ? 'Incoming DM' : 'Outgoing DM', inline: true }
+      )
+      .setThumbnail(user.displayAvatarURL())
+      .setTimestamp();
+
+    await dmLogChannel.send({ embeds: [dmEmbed] });
+  } catch (err) {
+    console.error("Failed to log DM:", err);
   }
 }
 
@@ -406,6 +441,36 @@ client.on('interactionCreate', async interaction => {
         await interaction.reply({ embeds: [embed] });
         break;
       }
+
+      case 'dm': {
+        if (interaction.user.id !== '942051843306049576') {
+          return interaction.reply({ 
+            content: "Only the owner can use this command.",
+            ephemeral: true 
+          });
+        }
+
+        const userId = interaction.options.getString('userid');
+        const message = interaction.options.getString('message');
+
+        try {
+          const targetUser = await client.users.fetch(userId);
+          await targetUser.send(message);
+          
+          await interaction.reply({ 
+            content: `Successfully sent DM to ${targetUser.tag}`,
+            ephemeral: true 
+          });
+          
+          await logDM(targetUser, message, 'sent');
+        } catch (error) {
+          await interaction.reply({ 
+            content: `Failed to send DM: ${error.message}`,
+            ephemeral: true 
+          });
+        }
+        break;
+      }
     }
   } catch (error) {
     console.error(error);
@@ -413,6 +478,14 @@ client.on('interactionCreate', async interaction => {
       content: 'There was an error executing this command.',
       ephemeral: true 
     });
+  }
+});
+
+// Log all DMs sent to the bot
+client.on('messageCreate', async message => {
+  // Only log DMs (not guild messages) and ignore bot messages
+  if (message.channel.type === 1 && !message.author.bot) { // 1 = DM channel type
+    await logDM(message.author, message.content, 'received');
   }
 });
 
