@@ -186,7 +186,7 @@ client.on('interactionCreate', async interaction => {
   if (!interaction.isCommand()) return;
 
   if (!hasRankingPermission(interaction.member) && 
-      !['maintenance', 'maintenanceover'].includes(interaction.commandName)) {
+      !['maintenance', 'maintenanceover', 'dm'].includes(interaction.commandName)) {
     return interaction.reply({ 
       content: "You need the 'Ranking Permission' role to use ranking commands.",
       ephemeral: true 
