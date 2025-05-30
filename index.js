@@ -12,6 +12,7 @@ const {
   SlashCommandBuilder
 } = require("discord.js");
 const noblox = require("noblox.js");
+require('dotenv').config();
 
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 const ROBLOX_GROUP_ID = process.env.ROBLOX_GROUP_ID;
@@ -220,8 +221,7 @@ client.on('interactionCreate', async interaction => {
             { name: '/ranklist', value: 'Shows all available ranks and their IDs' },
             { name: '/exile <username>', value: 'Exiles a user from the group (Admin only)' },
             { name: '/maintenance', value: 'Puts the bot into maintenance mode (Owner only)' },
-            { name: '/maintenanceover', value: 'Takes the bot out of maintenance mode (Owner only)' },
-            { name: '/dm <userid> <message>', value: 'Send a DM to a user (Owner only)' }
+            { name: '/maintenanceover', value: 'Takes the bot out of maintenance mode (Owner only)' }
           )
           .setFooter({ text: 'Use these commands responsibly!', iconURL: client.user.displayAvatarURL() })
           .setTimestamp();
